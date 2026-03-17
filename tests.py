@@ -5,10 +5,14 @@ import json
 import math
 import struct
 import subprocess
+import os
 import re
+import sys
 import unittest
 
-BINARY = "./build/song-analyzer"
+BINARY = os.path.join("build", "song-analyzer")
+if sys.platform == "win32":
+    BINARY += ".exe"
 SAMPLE_RATE = 44100
 
 

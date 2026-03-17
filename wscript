@@ -21,7 +21,7 @@ def configure(ctx):
     ctx.load('compiler_cxx')
 
     # Build essentia as a static library using its own waf
-    print('→ Configuring essentia...')
+    print('-> Configuring essentia...')
     subprocess.check_call(
         [sys.executable, 'waf', 'configure',
          '--build-static', "--lightweight=", '--fft=KISS', '--std=c++17'],
@@ -38,7 +38,7 @@ def configure(ctx):
 
 def build(ctx):
     # Build essentia first
-    print('→ Building essentia...')
+    print('-> Building essentia...')
     subprocess.check_call(
         [sys.executable, 'waf', 'build'],
         cwd=os.path.abspath(ESSENTIA_DIR),
