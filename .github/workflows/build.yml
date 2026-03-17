@@ -54,8 +54,19 @@ jobs:
           curl -sL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz | tar xz
           EIGEN_DIR="$(cygpath -m "$PWD/eigen-3.4.0")"
           mkdir -p "$EIGEN_DIR/lib/pkgconfig"
-          printf 'prefix=%s\nName: Eigen3\nDescription: C++ template library for linear algebra\nVersion: 3.4.0\nCflags: -I${prefix}\n' "$EIGEN_DIR" > "$EIGEN_DIR/lib/pkgconfig/eigen3.pc"
+          printf 'Name: Eigen3\nDescription: C++ template library for linear algebra\nVersion: 3.4.0\nCflags: -I%s\n' "$EIGEN_DIR" > "$EIGEN_DIR/lib/pkgconfig/eigen3.pc"
           echo "PKG_CONFIG_PATH=$EIGEN_DIR/lib/pkgconfig" >> "$GITHUB_ENV"
+
+      - name: Debug Eigen3 (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "=== pkg-config output ==="
+          pkg-config --cflags eigen3
+          echo "=== Eigen dir listing ==="
+          ls eigen-3.4.0/ | head -10
+          echo "=== .pc file ==="
+          cat eigen-3.4.0/lib/pkgconfig/eigen3.pc
 
       - name: Set up MSVC environment (Windows)
         if: runner.os == 'Windows'
