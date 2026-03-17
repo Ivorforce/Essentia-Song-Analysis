@@ -11,10 +11,10 @@ BINARY = "./build/song-analyzer"
 SAMPLE_RATE = 44100
 
 
-def generate_sine(freq_hz, duration_sec, amplitude=0.5):
+def generate_sine(freq_hz, duration_sec, amplitude=0.5, sample_rate=SAMPLE_RATE):
     """Generate a mono sine wave as binary floats."""
-    n = int(SAMPLE_RATE * duration_sec)
-    samples = [amplitude * math.sin(2 * math.pi * freq_hz * t / SAMPLE_RATE) for t in range(n)]
+    n = int(sample_rate * duration_sec)
+    samples = [amplitude * math.sin(2 * math.pi * freq_hz * t / sample_rate) for t in range(n)]
     return struct.pack(f"<{n}f", *samples)
 
 
@@ -36,10 +36,13 @@ def generate_click_track(bpm, duration_sec):
     return struct.pack(f"<{n}f", *samples)
 
 
-def run_analyzer(audio_bytes):
+def run_analyzer(audio_bytes, sample_rate=SAMPLE_RATE):
     """Run song-analyzer with given stdin bytes, return (returncode, stdout, stderr)."""
+    cmd = [BINARY]
+    if sample_rate != 44100:
+        cmd += ["--samplerate", str(sample_rate)]
     result = subprocess.run(
-        [BINARY], input=audio_bytes,
+        cmd, input=audio_bytes,
         capture_output=True, timeout=60,
     )
     return result.returncode, result.stdout.decode(), result.stderr.decode()
@@ -130,6 +133,14 @@ class TestSongAnalyzer(unittest.TestCase):
         loud_data = json.loads(loud_out)
         quiet_data = json.loads(quiet_out)
         self.assertGreater(loud_data["integratedLoudness"], quiet_data["integratedLoudness"])
+
+    def test_48000_sample_rate(self):
+        """A 440 Hz sine at 48000 Hz should still detect key A."""
+        audio = generate_sine(440, 10, sample_rate=48000)
+        code, stdout, _ = run_analyzer(audio, sample_rate=48000)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertEqual(data["key"], "A")
 
     def test_spectral_centroid_sine(self):
         """A 440 Hz sine should have spectral centroid values near 440 Hz."""

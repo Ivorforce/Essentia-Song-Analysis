@@ -18,10 +18,16 @@ python3 ./waf build
 
 ## Usage
 
-Feed 44100 Hz mono audio as binary little-endian 32-bit floats via stdin:
+Feed mono audio as binary little-endian 32-bit floats via stdin:
 
 ```bash
 ./build/song-analyzer < audio.raw
+```
+
+By default the sample rate is assumed to be 44100 Hz. Use `--samplerate` for other rates:
+
+```bash
+./build/song-analyzer --samplerate 48000 < audio.raw
 ```
 
 Output:
@@ -47,7 +53,7 @@ python3 tests.py
 To convert from a music file (requires ffmpeg):
 
 ```bash
-ffmpeg -i song.mp3 -f f32le -ac 1 -ar 44100 - | ./build/song-analyzer
+ffmpeg -i song.mp3 -f f32le -ac 1 -ar 48000 - | ./build/song-analyzer --samplerate 48000
 ```
 
 ## License

@@ -1,9 +1,31 @@
 #include <iostream>
+#include <cstdlib>
+#include <cstring>
 #include <vector>
 #include "essentia/essentia.h"
 #include "analyze.h"
 
-int main() {
+int main(int argc, char* argv[]) {
+    essentia::Real sampleRate = 44100.0;
+
+    for (int i = 1; i < argc; i++) {
+        if (std::strcmp(argv[i], "--samplerate") == 0) {
+            if (i + 1 >= argc) {
+                std::cerr << "Missing value for --samplerate" << std::endl;
+                return 1;
+            }
+            char* end;
+            sampleRate = std::strtod(argv[++i], &end);
+            if (*end != '\0' || sampleRate <= 0) {
+                std::cerr << "Invalid sample rate: " << argv[i] << std::endl;
+                return 1;
+            }
+        } else {
+            std::cerr << "Unknown option: " << argv[i] << std::endl;
+            return 1;
+        }
+    }
+
     // Read binary floats from stdin
     std::vector<essentia::Real> audio;
     constexpr size_t bufSize = 8192;
@@ -23,7 +45,7 @@ int main() {
     }
 
     essentia::init();
-    std::cout << analyzeSong(audio) << std::endl;
+    std::cout << analyzeSong(audio, sampleRate) << std::endl;
     essentia::shutdown();
 
     return 0;
