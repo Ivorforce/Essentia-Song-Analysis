@@ -34,6 +34,12 @@ Pipe binary little-endian 32-bit floats (44100 Hz mono) into stdin:
 
 Outputs JSON to stdout: `{"key": "A", "scale": "minor", "keyStrength": 0.69, "bpm": 128.0, "bpmConfidence": 3.5}`
 
+## Testing
+
+```bash
+python3 tests.py
+```
+
 ## Code Conventions
 
 ### C++

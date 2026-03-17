@@ -29,6 +29,12 @@ Output:
 {"key": "A", "scale": "minor", "keyStrength": 0.69, "bpm": 128.0, "bpmConfidence": 2.04}
 ```
 
+## Tests
+
+```bash
+python3 tests.py
+```
+
 To convert from a music file (requires ffmpeg):
 
 ```bash
