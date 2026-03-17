@@ -115,9 +115,11 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate) {
     std::vector<Real> spectralCentroidPoints = blockAverage(centroidValues, 1000);
 
     // Build JSON
+    Real duration = static_cast<Real>(audio.size()) / sampleRate;
     std::ostringstream json;
     json << "{"
-         << "\"key\": \"" << key << "\""
+         << "\"duration\": " << duration
+         << ", \"key\": \"" << key << "\""
          << ", \"scale\": \"" << scale << "\""
          << ", \"keyStrength\": " << keyStrength
          << ", \"bpm\": " << bpm

@@ -50,6 +50,23 @@ def run_analyzer(audio_bytes, sample_rate=SAMPLE_RATE):
 
 class TestSongAnalyzer(unittest.TestCase):
 
+    def test_version_flag(self):
+        """--version should print version and exit successfully."""
+        result = subprocess.run(
+            [BINARY, "--version"],
+            capture_output=True, timeout=10,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("song-analyzer", result.stdout.decode())
+
+    def test_duration(self):
+        """Duration should match the length of the input audio."""
+        audio = generate_sine(440, 10)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertAlmostEqual(data["duration"], 10.0, delta=0.1)
+
     def test_empty_input_fails(self):
         """No audio data should exit with error."""
         code, stdout, stderr = run_analyzer(b"")
@@ -62,7 +79,7 @@ class TestSongAnalyzer(unittest.TestCase):
         code, stdout, _ = run_analyzer(audio)
         self.assertEqual(code, 0)
         data = json.loads(stdout)
-        for field in ("key", "scale", "keyStrength", "bpm", "bpmConfidence"):
+        for field in ("duration", "key", "scale", "keyStrength", "bpm", "bpmConfidence"):
             self.assertIn(field, data)
 
     def test_sine_440_detects_key_a(self):

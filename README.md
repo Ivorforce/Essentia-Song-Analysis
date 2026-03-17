@@ -33,6 +33,7 @@ By default the sample rate is assumed to be 44100 Hz. Use `--samplerate` for oth
 Output:
 ```json
 {
+  "duration": 210.5,
   "key": "A",
   "scale": "minor",
   "keyStrength": 0.69,

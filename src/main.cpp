@@ -4,12 +4,16 @@
 #include <vector>
 #include "essentia/essentia.h"
 #include "analyze.h"
+#include "version.h"
 
 int main(int argc, char* argv[]) {
     essentia::Real sampleRate = 44100.0;
 
     for (int i = 1; i < argc; i++) {
-        if (std::strcmp(argv[i], "--samplerate") == 0) {
+        if (std::strcmp(argv[i], "--version") == 0) {
+            std::cout << "song-analyzer " << ESSENTIA_VERSION << std::endl;
+            return 0;
+        } else if (std::strcmp(argv[i], "--samplerate") == 0) {
             if (i + 1 >= argc) {
                 std::cerr << "Missing value for --samplerate" << std::endl;
                 return 1;
