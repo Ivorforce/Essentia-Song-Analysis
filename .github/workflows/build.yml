@@ -45,40 +45,26 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install eigen
 
-      - name: Install Eigen3 (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          # vcpkg's eigen3 package doesn't expose unsupported/ headers needed by essentia.
-          # Eigen is header-only, so we just download and set up include paths.
-          curl -sL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz | tar xz
-          EIGEN_DIR="$(cygpath -m "$PWD/eigen-3.4.0")"
-          # Create pkg-config file for waf's check_cfg
-          mkdir -p "$EIGEN_DIR/lib/pkgconfig"
-          printf 'Name: Eigen3\nDescription: C++ template library for linear algebra\nVersion: 3.4.0\nCflags: -I%s\n' "$EIGEN_DIR" > "$EIGEN_DIR/lib/pkgconfig/eigen3.pc"
-          echo "PKG_CONFIG_PATH=$EIGEN_DIR/lib/pkgconfig" >> "$GITHUB_ENV"
-
       - name: Set up MSVC environment (Windows)
         if: runner.os == 'Windows'
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Configure
-        run: python3 waf configure
-
-      - name: Debug waf config (Windows)
+      - name: Install Eigen3 (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          echo "=== INCLUDE env ==="
-          echo "$INCLUDE"
-          echo "=== essentia cached INCLUDES_EIGEN3 ==="
-          cat essentia/build/c4che/_cache.py | grep -i eigen || echo "not found"
-          echo "=== our cached INCLUDES_EIGEN3 ==="
-          cat build/c4che/_cache.py | grep -i eigen || echo "not found"
-          echo "=== .pc file ==="
-          cat eigen-3.4.0/lib/pkgconfig/eigen3.pc
-          echo "=== PKG_CONFIG_PATH ==="
-          echo "$PKG_CONFIG_PATH"
+          # Eigen is header-only, so we just download and set up include paths.
+          # Strawberry Perl's pkg-config is broken on this runner, so we add Eigen
+          # to both PKG_CONFIG_PATH (for waf's check_cfg) and INCLUDE (for MSVC).
+          curl -sL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz | tar xz
+          EIGEN_DIR="$(cygpath -m "$PWD/eigen-3.4.0")"
+          mkdir -p "$EIGEN_DIR/lib/pkgconfig"
+          printf 'Name: Eigen3\nDescription: C++ template library for linear algebra\nVersion: 3.4.0\nCflags: -I%s\n' "$EIGEN_DIR" > "$EIGEN_DIR/lib/pkgconfig/eigen3.pc"
+          echo "PKG_CONFIG_PATH=$EIGEN_DIR/lib/pkgconfig" >> "$GITHUB_ENV"
+          echo "INCLUDE=$EIGEN_DIR;$INCLUDE" >> "$GITHUB_ENV"
+
+      - name: Configure
+        run: python3 waf configure
 
       - name: Build
         run: python3 waf build
