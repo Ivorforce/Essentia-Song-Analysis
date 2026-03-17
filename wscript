@@ -21,10 +21,11 @@ def configure(ctx):
     ctx.load('compiler_cxx')
 
     # Build essentia as a static library using its own waf
+    # C++14 is needed for Eigen; not C++17 because essentia passes -std= to MSVC which ignores it
     print('-> Configuring essentia...')
     subprocess.check_call(
         [sys.executable, 'waf', 'configure',
-         '--build-static', "--lightweight=", '--fft=KISS', '--std=c++17'],
+         '--build-static', '--lightweight=', '--fft=KISS', '--std=c++14'],
         cwd=os.path.abspath(ESSENTIA_DIR),
     )
 
@@ -54,7 +55,8 @@ def build(ctx):
         f.write(f'#define ESSENTIA_VERSION "{essentia_version}"\n')
         f.write('#endif\n')
 
-    cxxflags = ['/std:c++17'] if sys.platform == 'win32' else ['-std=c++17']
+    # C++14 is MSVC's default, no flag needed
+    cxxflags = [] if sys.platform == 'win32' else ['-std=c++14']
 
     ctx.program(
         source=['src/main.cpp', 'src/analyze.cpp'],

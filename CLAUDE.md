@@ -24,7 +24,7 @@ python3 ./waf configure
 python3 ./waf build
 ```
 
-Essentia is configured automatically with `--build-static --lightweight= --fft=KISS --std=c++17`.
+Essentia is configured automatically with `--build-static --lightweight= --fft=KISS --std=c++14`.
 
 ## Usage
 
