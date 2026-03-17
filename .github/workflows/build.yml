@@ -52,6 +52,10 @@ jobs:
           vcpkg install eigen3
           echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT/installed/x64-windows/lib/pkgconfig" >> "$GITHUB_ENV"
 
+      - name: Set up MSVC environment (Windows)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Configure
         run: python3 waf configure
 
