@@ -32,6 +32,16 @@ def configure(ctx):
         essentia_args += ['--check-cxx-compiler=g++', '--check-c-compiler=gcc']
     subprocess.check_call(essentia_args, cwd=os.path.abspath(ESSENTIA_DIR))
 
+    if sys.platform == 'win32':
+        # Essentia's wscript adds MSVC flags (-W2, -EHsc) on win32 regardless
+        # of the compiler. Patch the cached config to use GCC equivalents.
+        cache_file = os.path.join(ESSENTIA_DIR, 'build', 'c4che', '_cache.py')
+        with open(cache_file) as f:
+            cache = f.read()
+        cache = cache.replace("'-W2'", "'-Wall'").replace("'-EHsc'", "")
+        with open(cache_file, 'w') as f:
+            f.write(cache)
+
     # Detect Eigen (needed for essentia headers)
     ctx.check_cfg(package='eigen3', uselib_store='EIGEN3',
                   args=['--cflags'])
