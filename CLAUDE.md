@@ -8,6 +8,8 @@ It works by running the CLI and feeding in raw song data (floats) into stdin. Th
 The analyzed properties are:
 - Tone (Musical Key, Scale)
 - Tempo (BPM)
+- Loudness (EBU R128 integrated + momentary time-series)
+- Spectral Centroid (brightness time-series)
 
 ## Tech stack
 
@@ -32,7 +34,7 @@ Pipe binary little-endian 32-bit floats (44100 Hz mono) into stdin:
 ./build/song-analyzer < audio.raw
 ```
 
-Outputs JSON to stdout: `{"key": "A", "scale": "minor", "keyStrength": 0.69, "bpm": 128.0, "bpmConfidence": 3.5}`
+Outputs JSON to stdout with key, scale, BPM, integrated loudness, and time-series arrays (loudness, spectralCentroid — up to 1000 points each).
 
 ## Testing
 

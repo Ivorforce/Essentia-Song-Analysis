@@ -1,6 +1,6 @@
 # Essentia Song Analyzer
 
-CLI tool that analyzes musical key and tempo (BPM) from raw audio. Reads binary floats from stdin, outputs JSON to stdout.
+CLI tool that analyzes musical key, tempo (BPM), loudness, and spectral centroid from raw audio. Reads binary floats from stdin, outputs JSON to stdout.
 
 ## Prerequisites
 
@@ -26,7 +26,16 @@ Feed 44100 Hz mono audio as binary little-endian 32-bit floats via stdin:
 
 Output:
 ```json
-{"key": "A", "scale": "minor", "keyStrength": 0.69, "bpm": 128.0, "bpmConfidence": 2.04}
+{
+  "key": "A",
+  "scale": "minor",
+  "keyStrength": 0.69,
+  "bpm": 128.0,
+  "bpmConfidence": 2.04,
+  "integratedLoudness": -14.2,
+  "loudness": [-18.1, -17.5, -16.8, "... up to 1000 floats"],
+  "spectralCentroid": [1204.3, 1180.7, 1220.1, "... up to 1000 floats"]
+}
 ```
 
 ## Tests
