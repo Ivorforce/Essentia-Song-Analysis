@@ -29,7 +29,7 @@ def configure(ctx):
     essentia_args = [sys.executable, 'waf', 'configure',
                      '--build-static', '--lightweight=', '--fft=KISS', '--std=c++14']
     if sys.platform == 'win32':
-        essentia_args += ['--check-cxx-compiler=g++', '--check-c-compiler=gcc']
+        essentia_args += ['--check-cxx-compiler=g++']
     subprocess.check_call(essentia_args, cwd=os.path.abspath(ESSENTIA_DIR))
 
     # Detect Eigen (needed for essentia headers)

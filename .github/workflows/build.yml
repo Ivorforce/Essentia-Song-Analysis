@@ -58,7 +58,7 @@ jobs:
           echo "PKG_CONFIG_PATH=$EIGEN_DIR/lib/pkgconfig" >> "$GITHUB_ENV"
 
       - name: Configure
-        run: python3 waf configure ${{ runner.os == 'Windows' && '--check-cxx-compiler=g++ --check-c-compiler=gcc' || '' }}
+        run: python3 waf configure ${{ runner.os == 'Windows' && '--check-cxx-compiler=g++' || '' }}
 
       - name: Build
         run: python3 waf build
