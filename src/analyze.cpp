@@ -1,9 +1,25 @@
 #include "analyze.h"
 #include <sstream>
+#include <numeric>
 #include <essentia/algorithmfactory.h>
 
 using namespace essentia;
 using namespace essentia::standard;
+
+static std::vector<Real> blockAverage(const std::vector<Real>& data, size_t targetSize) {
+    if (data.size() <= targetSize) return data;
+    std::vector<Real> result(targetSize);
+    double blockSize = static_cast<double>(data.size()) / targetSize;
+    for (size_t i = 0; i < targetSize; i++) {
+        size_t start = static_cast<size_t>(i * blockSize);
+        size_t end = static_cast<size_t>((i + 1) * blockSize);
+        if (end > data.size()) end = data.size();
+        Real sum = 0;
+        for (size_t j = start; j < end; j++) sum += data[j];
+        result[i] = sum / (end - start);
+    }
+    return result;
+}
 
 std::string analyzeSong(const std::vector<Real>& audio) {
     AlgorithmFactory& factory = AlgorithmFactory::instance();
@@ -30,6 +46,55 @@ std::string analyzeSong(const std::vector<Real>& audio) {
     rhythmExtractor->output("bpmIntervals").set(bpmIntervals);
     rhythmExtractor->compute();
 
+    // Loudness (EBU R128) — needs stereo input, duplicate mono to both channels
+    std::vector<StereoSample> stereoAudio(audio.size());
+    for (size_t i = 0; i < audio.size(); i++) {
+        stereoAudio[i].left() = audio[i];
+        stereoAudio[i].right() = audio[i];
+    }
+    std::unique_ptr<Algorithm> loudness(factory.create("LoudnessEBUR128",
+        "hopSize", 0.1, "sampleRate", 44100.0));
+    Real integratedLoudness, loudnessRange;
+    std::vector<Real> momentaryLoudness, shortTermLoudness;
+    loudness->input("signal").set(stereoAudio);
+    loudness->output("momentaryLoudness").set(momentaryLoudness);
+    loudness->output("shortTermLoudness").set(shortTermLoudness);
+    loudness->output("integratedLoudness").set(integratedLoudness);
+    loudness->output("loudnessRange").set(loudnessRange);
+    loudness->compute();
+    std::vector<Real> loudnessPoints = blockAverage(momentaryLoudness, 1000);
+
+    // Spectral centroid — frame-by-frame analysis
+    std::unique_ptr<Algorithm> frameCutter(factory.create("FrameCutter",
+        "frameSize", 2048, "hopSize", 512));
+    std::unique_ptr<Algorithm> windowing(factory.create("Windowing",
+        "type", "hann"));
+    std::unique_ptr<Algorithm> spectrum(factory.create("Spectrum"));
+    std::unique_ptr<Algorithm> centroid(factory.create("Centroid",
+        "range", 22050.0));
+
+    std::vector<Real> frame, windowedFrame, spectrumValues;
+    Real centroidValue;
+    frameCutter->input("signal").set(audio);
+    frameCutter->output("frame").set(frame);
+    windowing->input("frame").set(frame);
+    windowing->output("frame").set(windowedFrame);
+    spectrum->input("frame").set(windowedFrame);
+    spectrum->output("spectrum").set(spectrumValues);
+    centroid->input("array").set(spectrumValues);
+    centroid->output("centroid").set(centroidValue);
+
+    std::vector<Real> centroidValues;
+    while (true) {
+        frameCutter->compute();
+        if (frame.empty()) break;
+        windowing->compute();
+        spectrum->compute();
+        centroid->compute();
+        centroidValues.push_back(centroidValue);
+    }
+    std::vector<Real> spectralCentroidPoints = blockAverage(centroidValues, 1000);
+
     // Build JSON
     std::ostringstream json;
     json << "{"
@@ -38,6 +103,17 @@ std::string analyzeSong(const std::vector<Real>& audio) {
          << ", \"keyStrength\": " << keyStrength
          << ", \"bpm\": " << bpm
          << ", \"bpmConfidence\": " << bpmConfidence
-         << "}";
+         << ", \"integratedLoudness\": " << integratedLoudness
+         << ", \"loudness\": [";
+    for (size_t i = 0; i < loudnessPoints.size(); i++) {
+        if (i > 0) json << ", ";
+        json << loudnessPoints[i];
+    }
+    json << "], \"spectralCentroid\": [";
+    for (size_t i = 0; i < spectralCentroidPoints.size(); i++) {
+        if (i > 0) json << ", ";
+        json << spectralCentroidPoints[i];
+    }
+    json << "]}";
     return json.str();
 }

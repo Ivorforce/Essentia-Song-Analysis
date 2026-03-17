@@ -95,5 +95,53 @@ class TestSongAnalyzer(unittest.TestCase):
         self.assertAlmostEqual(data["bpm"], 120, delta=5)
 
 
+    def test_loudness_fields_present(self):
+        """Output should contain loudness and spectral centroid fields."""
+        audio = generate_sine(440, 10)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        for field in ("integratedLoudness", "loudness", "spectralCentroid"):
+            self.assertIn(field, data)
+
+    def test_loudness_array_length(self):
+        """Loudness and spectralCentroid arrays should have at most 1000 elements."""
+        audio = generate_sine(440, 30)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertLessEqual(len(data["loudness"]), 1000)
+        self.assertLessEqual(len(data["spectralCentroid"]), 1000)
+
+    def test_silence_loudness(self):
+        """Silence should have very low integrated loudness (< -50 LUFS)."""
+        audio = generate_silence(5)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertLess(data["integratedLoudness"], -50)
+
+    def test_loud_vs_quiet(self):
+        """A loud sine should have higher integratedLoudness than a quiet one."""
+        loud = generate_sine(440, 10, amplitude=0.9)
+        quiet = generate_sine(440, 10, amplitude=0.01)
+        _, loud_out, _ = run_analyzer(loud)
+        _, quiet_out, _ = run_analyzer(quiet)
+        loud_data = json.loads(loud_out)
+        quiet_data = json.loads(quiet_out)
+        self.assertGreater(loud_data["integratedLoudness"], quiet_data["integratedLoudness"])
+
+    def test_spectral_centroid_sine(self):
+        """A 440 Hz sine should have spectral centroid values near 440 Hz."""
+        audio = generate_sine(440, 10)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        centroids = data["spectralCentroid"]
+        self.assertTrue(len(centroids) > 0)
+        avg_centroid = sum(centroids) / len(centroids)
+        self.assertAlmostEqual(avg_centroid, 440, delta=50)
+
+
 if __name__ == "__main__":
     unittest.main()
