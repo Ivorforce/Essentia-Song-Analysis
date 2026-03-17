@@ -5,6 +5,7 @@ import json
 import math
 import struct
 import subprocess
+import re
 import unittest
 
 BINARY = "./build/song-analyzer"
@@ -57,7 +58,17 @@ class TestSongAnalyzer(unittest.TestCase):
             capture_output=True, timeout=10,
         )
         self.assertEqual(result.returncode, 0)
-        self.assertIn("song-analyzer", result.stdout.decode())
+        output = result.stdout.decode().strip()
+        self.assertRegex(output, r'^song-analyzer \d+\.\d+\.\d+$')
+
+    def test_essentia_version_flag(self):
+        """--essentia-version should print Essentia version and exit successfully."""
+        result = subprocess.run(
+            [BINARY, "--essentia-version"],
+            capture_output=True, timeout=10,
+        )
+        self.assertEqual(result.returncode, 0)
+        self.assertIn("essentia", result.stdout.decode())
 
     def test_duration(self):
         """Duration should match the length of the input audio."""

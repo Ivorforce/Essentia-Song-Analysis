@@ -44,12 +44,22 @@ def build(ctx):
         cwd=os.path.abspath(ESSENTIA_DIR),
     )
 
+    # Generate version.h from VERSION file
+    version = open('VERSION').read().strip()
+    essentia_version = open(os.path.join(ESSENTIA_DIR, 'VERSION')).read().strip()
+    with open('src/version.h', 'w') as f:
+        f.write('#ifndef VERSION_H_\n')
+        f.write('#define VERSION_H_\n')
+        f.write(f'#define SONG_ANALYZER_VERSION "{version}"\n')
+        f.write(f'#define ESSENTIA_VERSION "{essentia_version}"\n')
+        f.write('#endif\n')
+
     cxxflags = ['/std:c++17'] if sys.platform == 'win32' else ['-std=c++17']
 
     ctx.program(
         source=['src/main.cpp', 'src/analyze.cpp'],
         target='song-analyzer',
-        includes=[ctx.env.ESSENTIA_INC],
+        includes=['src', ctx.env.ESSENTIA_INC],
         use='EIGEN3',
         stlib=['essentia'],
         stlibpath=[ctx.env.ESSENTIA_LIB],

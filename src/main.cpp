@@ -11,7 +11,10 @@ int main(int argc, char* argv[]) {
 
     for (int i = 1; i < argc; i++) {
         if (std::strcmp(argv[i], "--version") == 0) {
-            std::cout << "song-analyzer " << ESSENTIA_VERSION << std::endl;
+            std::cout << "song-analyzer " << SONG_ANALYZER_VERSION << std::endl;
+            return 0;
+        } else if (std::strcmp(argv[i], "--essentia-version") == 0) {
+            std::cout << "essentia " << ESSENTIA_VERSION << std::endl;
             return 0;
         } else if (std::strcmp(argv[i], "--samplerate") == 0) {
             if (i + 1 >= argc) {
