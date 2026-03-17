@@ -20,8 +20,11 @@ def options(ctx):
 def configure(ctx):
     ctx.load('compiler_cxx')
 
+    if ctx.env.CXX_NAME == 'msvc':
+        ctx.fatal('MSVC is not supported. Use MinGW (g++) or Clang instead.')
+
     # Build essentia as a static library using its own waf
-    # C++14 is needed for Eigen; not C++17 because essentia passes -std= to MSVC which ignores it
+    # C++14 is the minimum for Eigen
     print('-> Configuring essentia...')
     subprocess.check_call(
         [sys.executable, 'waf', 'configure',
@@ -55,9 +58,6 @@ def build(ctx):
         f.write(f'#define ESSENTIA_VERSION "{essentia_version}"\n')
         f.write('#endif\n')
 
-    # C++14 is MSVC's default, no flag needed
-    cxxflags = [] if sys.platform == 'win32' else ['-std=c++14']
-
     ctx.program(
         source=['src/main.cpp', 'src/analyze.cpp'],
         target='song-analyzer',
@@ -65,5 +65,5 @@ def build(ctx):
         use='EIGEN3',
         stlib=['essentia'],
         stlibpath=[ctx.env.ESSENTIA_LIB],
-        cxxflags=cxxflags,
+        cxxflags=['-std=c++14'],
     )

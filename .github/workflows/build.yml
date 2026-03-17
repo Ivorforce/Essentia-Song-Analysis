@@ -45,23 +45,26 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install eigen
 
-      - name: Set up MSVC environment (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Install Eigen3 (Windows)
         if: runner.os == 'Windows'
         shell: bash
         run: |
           # Eigen is header-only, so we just download and set up include paths.
-          # Strawberry Perl's pkg-config is broken on this runner, so we add Eigen
-          # to both PKG_CONFIG_PATH (for waf's check_cfg) and INCLUDE (for MSVC).
+          # Use MinGW's pkg-config since Strawberry Perl's is broken on the runner.
           curl -sL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz | tar xz
           EIGEN_DIR="$(cygpath -m "$PWD/eigen-3.4.0")"
           mkdir -p "$EIGEN_DIR/lib/pkgconfig"
           printf 'Name: Eigen3\nDescription: C++ template library for linear algebra\nVersion: 3.4.0\nCflags: -I%s\n' "$EIGEN_DIR" > "$EIGEN_DIR/lib/pkgconfig/eigen3.pc"
           echo "PKG_CONFIG_PATH=$EIGEN_DIR/lib/pkgconfig" >> "$GITHUB_ENV"
-          echo "INCLUDE=$EIGEN_DIR;$INCLUDE" >> "$GITHUB_ENV"
+
+      - name: Use MinGW (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          # Use MinGW instead of MSVC — essentia's roguevector.h relies on
+          # libstdc++ internals that are incompatible with modern MSVC's STL.
+          echo "CC=gcc" >> "$GITHUB_ENV"
+          echo "CXX=g++" >> "$GITHUB_ENV"
 
       - name: Configure
         run: python3 waf configure
