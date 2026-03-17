@@ -57,17 +57,8 @@ jobs:
           printf 'Name: Eigen3\nDescription: C++ template library for linear algebra\nVersion: 3.4.0\nCflags: -I%s\n' "$EIGEN_DIR" > "$EIGEN_DIR/lib/pkgconfig/eigen3.pc"
           echo "PKG_CONFIG_PATH=$EIGEN_DIR/lib/pkgconfig" >> "$GITHUB_ENV"
 
-      - name: Use MinGW (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          # Use MinGW instead of MSVC — essentia's roguevector.h relies on
-          # libstdc++ internals that are incompatible with modern MSVC's STL.
-          echo "CC=gcc" >> "$GITHUB_ENV"
-          echo "CXX=g++" >> "$GITHUB_ENV"
-
       - name: Configure
-        run: python3 waf configure
+        run: python3 waf configure ${{ runner.os == 'Windows' && '--check-cxx-compiler=g++ --check-c-compiler=gcc' || '' }}
 
       - name: Build
         run: python3 waf build

@@ -26,11 +26,11 @@ def configure(ctx):
     # Build essentia as a static library using its own waf
     # C++14 is the minimum for Eigen
     print('-> Configuring essentia...')
-    subprocess.check_call(
-        [sys.executable, 'waf', 'configure',
-         '--build-static', '--lightweight=', '--fft=KISS', '--std=c++14'],
-        cwd=os.path.abspath(ESSENTIA_DIR),
-    )
+    essentia_args = [sys.executable, 'waf', 'configure',
+                     '--build-static', '--lightweight=', '--fft=KISS', '--std=c++14']
+    if sys.platform == 'win32':
+        essentia_args += ['--check-cxx-compiler=g++', '--check-c-compiler=gcc']
+    subprocess.check_call(essentia_args, cwd=os.path.abspath(ESSENTIA_DIR))
 
     # Detect Eigen (needed for essentia headers)
     ctx.check_cfg(package='eigen3', uselib_store='EIGEN3',
