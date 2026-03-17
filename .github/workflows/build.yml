@@ -47,7 +47,10 @@ jobs:
 
       - name: Install Eigen3 (Windows)
         if: runner.os == 'Windows'
-        run: choco install eigen
+        shell: bash
+        run: |
+          vcpkg install eigen3
+          echo "PKG_CONFIG_PATH=$VCPKG_INSTALLATION_ROOT/installed/x64-windows/lib/pkgconfig" >> "$GITHUB_ENV"
 
       - name: Configure
         run: python3 waf configure
