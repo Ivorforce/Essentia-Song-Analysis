@@ -18,6 +18,9 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      PYTHONIOENCODING: utf-8
+
     steps:
       - name: Checkout with submodules
         uses: actions/checkout@v4
