@@ -2,19 +2,24 @@ name: Build
 
 on:
   workflow_dispatch:
+    inputs:
+      os:
+        description: 'Platform to build'
+        required: true
+        type: choice
+        default: 'all'
+        options:
+          - all
+          - ubuntu-latest
+          - macos-latest
+          - windows-latest
 
 jobs:
   build:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            eigen-install: sudo apt-get update && sudo apt-get install -y libeigen3-dev
-          - os: macos-latest
-            eigen-install: brew install eigen
-          - os: windows-latest
-            eigen-install: choco install eigen
+        os: ${{ inputs.os == 'all' && fromJSON('["ubuntu-latest","macos-latest","windows-latest"]') || fromJSON(format('["{0}"]', inputs.os)) }}
 
     runs-on: ${{ matrix.os }}
 
@@ -32,8 +37,17 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install Eigen3
-        run: ${{ matrix.eigen-install }}
+      - name: Install Eigen3 (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libeigen3-dev
+
+      - name: Install Eigen3 (macOS)
+        if: runner.os == 'macOS'
+        run: brew install eigen
+
+      - name: Install Eigen3 (Windows)
+        if: runner.os == 'Windows'
+        run: choco install eigen
 
       - name: Configure
         run: python3 waf configure
