@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            eigen-install: sudo apt-get update && sudo apt-get install -y libeigen3-dev
+          - os: macos-latest
+            eigen-install: brew install eigen
+          - os: windows-latest
+            eigen-install: choco install eigen
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout with submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Eigen3
+        run: ${{ matrix.eigen-install }}
+
+      - name: Configure
+        run: python3 waf configure
+
+      - name: Build
+        run: python3 waf build
+
+      - name: Test
+        run: python3 tests.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: song-analyzer-${{ runner.os }}
+          path: build/song-analyzer*
