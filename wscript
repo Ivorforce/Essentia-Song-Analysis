@@ -47,7 +47,7 @@ def build(ctx):
     cxxflags = ['/std:c++17'] if sys.platform == 'win32' else ['-std=c++17']
 
     ctx.program(
-        source='src/main.cpp',
+        source=['src/main.cpp', 'src/analyze.cpp'],
         target='song-analyzer',
         includes=[ctx.env.ESSENTIA_INC],
         use='EIGEN3',
