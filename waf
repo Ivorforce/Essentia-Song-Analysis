@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+import os, sys, runpy
+sys.argv[0] = os.path.join(os.path.dirname(__file__), 'essentia', 'waf')
+runpy.run_path(sys.argv[0], run_name='__main__')
