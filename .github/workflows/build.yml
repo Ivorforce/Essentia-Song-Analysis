@@ -45,4 +45,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: song-analyzer-${{ runner.os }}
-          path: build/song-analyzer*
+          path: |
+            build/song-analyzer*
+            LICENSE
+            THIRD-PARTY-LICENSES

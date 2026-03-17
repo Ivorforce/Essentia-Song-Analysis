@@ -49,3 +49,11 @@ To convert from a music file (requires ffmpeg):
 ```bash
 ffmpeg -i song.mp3 -f f32le -ac 1 -ar 44100 - | ./build/song-analyzer
 ```
+
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE). See [THIRD-PARTY-LICENSES](THIRD-PARTY-LICENSES) for third-party library licenses.
+
+## Acknowledgments
+
+Built with [Essentia](https://essentia.upf.edu/) — an open-source C++ library for audio analysis and music information retrieval by the [Music Technology Group](https://www.upf.edu/web/mtg/) at Universitat Pompeu Fabra.
