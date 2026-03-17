@@ -12,8 +12,27 @@ The analyzed properties are:
 ## Tech stack
 
 - WAF build system (`./waf`)
-- Essentia (./essentia), a library for song analysis, using Eigen.
+- Essentia (`./essentia` git submodule), a library for song analysis, using Eigen.
 - Multi-platform (macOS, Windows, Linux).
+
+## Building
+
+```bash
+python3 ./waf configure
+python3 ./waf build
+```
+
+Essentia is configured automatically with `--build-static --lightweight= --fft=KISS --std=c++17`.
+
+## Usage
+
+Pipe binary little-endian 32-bit floats (44100 Hz mono) into stdin:
+
+```bash
+./build/song-analyzer < audio.raw
+```
+
+Outputs JSON to stdout: `{"key": "A", "scale": "minor", "keyStrength": 0.69, "bpm": 128.0, "bpmConfidence": 3.5}`
 
 ## Code Conventions
 
