@@ -77,5 +77,5 @@ def build(ctx):
         use='EIGEN3',
         stlib=['essentia'],
         stlibpath=[ctx.env.ESSENTIA_LIB],
-        cxxflags=['-std=c++14'],
+        cxxflags=['-std=c++14', '-O2'],
     )
