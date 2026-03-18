@@ -2,6 +2,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
 #include "essentia/essentia.h"
 #include "analyze.h"
 #include "version.h"
@@ -32,6 +36,10 @@ int main(int argc, char* argv[]) {
             return 1;
         }
     }
+
+#ifdef _WIN32
+    _setmode(_fileno(stdin), _O_BINARY);
+#endif
 
     // Read binary floats from stdin
     std::vector<essentia::Real> audio;
