@@ -8,7 +8,7 @@ It works by running the CLI and feeding in raw song data (floats) into stdin. Th
 The analyzed properties are:
 - Tone (Musical Key, Scale)
 - Tempo (BPM)
-- Loudness (EBU R128 integrated + momentary time-series)
+- Loudness (EBU R128 integrated, loudness range + momentary time-series)
 - Spectral Centroid (brightness time-series)
 
 ## Tech stack
@@ -37,7 +37,7 @@ Pipe binary little-endian 32-bit floats (mono) into stdin:
 
 Default sample rate is 44100 Hz. Use `--samplerate` for other rates.
 
-Outputs JSON to stdout with key, scale, BPM, integrated loudness, and time-series arrays (loudness, spectralCentroid — up to 1000 points each).
+Outputs JSON to stdout with key, scale, BPM, integrated loudness, loudness range, and time-series arrays (loudness, spectralCentroid — up to 1000 points each).
 
 ## Testing
 

@@ -40,6 +40,7 @@ Output:
   "bpm": 128.0,
   "bpmConfidence": 2.04,
   "integratedLoudness": -14.2,
+  "loudnessRange": 7.3,
   "loudness": [-18.1, -17.5, -16.8, "... up to 1000 floats"],
   "spectralCentroid": [1204.3, 1180.7, 1220.1, "... up to 1000 floats"]
 }

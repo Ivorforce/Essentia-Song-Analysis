@@ -125,6 +125,7 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate) {
          << ", \"bpm\": " << bpm
          << ", \"bpmConfidence\": " << bpmConfidence
          << ", \"integratedLoudness\": " << integratedLoudness
+         << ", \"loudnessRange\": " << loudnessRange
          << ", \"loudness\": [";
     for (size_t i = 0; i < loudnessPoints.size(); i++) {
         if (i > 0) json << ", ";
