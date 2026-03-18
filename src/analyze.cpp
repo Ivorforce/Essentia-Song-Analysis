@@ -21,7 +21,7 @@ static std::vector<Real> blockAverage(const std::vector<Real>& data, size_t targ
     return result;
 }
 
-std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate) {
+std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate, long timeseriesLength) {
     AlgorithmFactory& factory = AlgorithmFactory::instance();
 
     // Key detection
@@ -80,7 +80,11 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate) {
     loudness->output("integratedLoudness").set(integratedLoudness);
     loudness->output("loudnessRange").set(loudnessRange);
     loudness->compute();
-    std::vector<Real> loudnessPoints = blockAverage(momentaryLoudness, 1000);
+    std::vector<Real> loudnessPoints;
+    if (timeseriesLength < 0)
+        loudnessPoints = momentaryLoudness;
+    else if (timeseriesLength > 0)
+        loudnessPoints = blockAverage(momentaryLoudness, static_cast<size_t>(timeseriesLength));
 
     // Spectral centroid — frame-by-frame analysis
     Real nyquist = sampleRate / 2.0;
@@ -112,7 +116,11 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate) {
         centroid->compute();
         centroidValues.push_back(centroidValue);
     }
-    std::vector<Real> spectralCentroidPoints = blockAverage(centroidValues, 1000);
+    std::vector<Real> spectralCentroidPoints;
+    if (timeseriesLength < 0)
+        spectralCentroidPoints = centroidValues;
+    else if (timeseriesLength > 0)
+        spectralCentroidPoints = blockAverage(centroidValues, static_cast<size_t>(timeseriesLength));
 
     // Build JSON
     Real duration = static_cast<Real>(audio.size()) / sampleRate;
@@ -125,17 +133,20 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate) {
          << ", \"bpm\": " << bpm
          << ", \"bpmConfidence\": " << bpmConfidence
          << ", \"integratedLoudness\": " << integratedLoudness
-         << ", \"loudnessRange\": " << loudnessRange
-         << ", \"loudness\": [";
-    for (size_t i = 0; i < loudnessPoints.size(); i++) {
-        if (i > 0) json << ", ";
-        json << loudnessPoints[i];
+         << ", \"loudnessRange\": " << loudnessRange;
+    if (timeseriesLength != 0) {
+        json << ", \"loudness\": [";
+        for (size_t i = 0; i < loudnessPoints.size(); i++) {
+            if (i > 0) json << ", ";
+            json << loudnessPoints[i];
+        }
+        json << "], \"spectralCentroid\": [";
+        for (size_t i = 0; i < spectralCentroidPoints.size(); i++) {
+            if (i > 0) json << ", ";
+            json << spectralCentroidPoints[i];
+        }
+        json << "]";
     }
-    json << "], \"spectralCentroid\": [";
-    for (size_t i = 0; i < spectralCentroidPoints.size(); i++) {
-        if (i > 0) json << ", ";
-        json << spectralCentroidPoints[i];
-    }
-    json << "]}";
+    json << "}";
     return json.str();
 }

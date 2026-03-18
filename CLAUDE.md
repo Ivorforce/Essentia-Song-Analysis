@@ -33,11 +33,15 @@ Pipe binary little-endian 32-bit floats (mono) into stdin:
 ```bash
 ./build/song-analyzer < audio.raw
 ./build/song-analyzer --samplerate 48000 < audio.raw
+./build/song-analyzer --timeseries-length 1000 < audio.raw
+./build/song-analyzer --timeseries-length -1 < audio.raw   # no resampling, all raw values
 ```
 
 Default sample rate is 44100 Hz. Use `--samplerate` for other rates.
 
-Outputs JSON to stdout with key, scale, BPM, integrated loudness, loudness range, and time-series arrays (loudness, spectralCentroid — up to 1000 points each).
+Use `--timeseries-length N` to include time-series arrays (loudness, spectralCentroid) in the output. Default is 0 (omitted). Use -1 to output all raw values without resampling.
+
+Outputs JSON to stdout with key, scale, BPM, integrated loudness, loudness range, and optionally time-series arrays (loudness, spectralCentroid).
 
 ## Testing
 

@@ -41,11 +41,13 @@ def generate_click_track(bpm, duration_sec):
     return struct.pack(f"<{n}f", *samples)
 
 
-def run_analyzer(audio_bytes, sample_rate=SAMPLE_RATE):
+def run_analyzer(audio_bytes, sample_rate=SAMPLE_RATE, timeseries_length=None):
     """Run song-analyzer with given stdin bytes, return (returncode, stdout, stderr)."""
     cmd = [BINARY]
     if sample_rate != 44100:
         cmd += ["--samplerate", str(sample_rate)]
+    if timeseries_length is not None:
+        cmd += ["--timeseries-length", str(timeseries_length)]
     result = subprocess.run(
         cmd, input=audio_bytes,
         capture_output=True, timeout=60,
@@ -131,9 +133,9 @@ class TestSongAnalyzer(unittest.TestCase):
 
 
     def test_loudness_fields_present(self):
-        """Output should contain loudness and spectral centroid fields."""
+        """Output should contain loudness and spectral centroid fields when requested."""
         audio = generate_sine(440, 10)
-        code, stdout, _ = run_analyzer(audio)
+        code, stdout, _ = run_analyzer(audio, timeseries_length=1000)
         self.assertEqual(code, 0)
         data = json.loads(stdout)
         for field in ("integratedLoudness", "loudness", "spectralCentroid"):
@@ -142,7 +144,7 @@ class TestSongAnalyzer(unittest.TestCase):
     def test_loudness_array_length(self):
         """Loudness and spectralCentroid arrays should have at most 1000 elements."""
         audio = generate_sine(440, 30)
-        code, stdout, _ = run_analyzer(audio)
+        code, stdout, _ = run_analyzer(audio, timeseries_length=1000)
         self.assertEqual(code, 0)
         data = json.loads(stdout)
         self.assertLessEqual(len(data["loudness"]), 1000)
@@ -177,13 +179,36 @@ class TestSongAnalyzer(unittest.TestCase):
     def test_spectral_centroid_sine(self):
         """A 440 Hz sine should have spectral centroid values near 440 Hz."""
         audio = generate_sine(440, 10)
-        code, stdout, _ = run_analyzer(audio)
+        code, stdout, _ = run_analyzer(audio, timeseries_length=1000)
         self.assertEqual(code, 0)
         data = json.loads(stdout)
         centroids = data["spectralCentroid"]
         self.assertTrue(len(centroids) > 0)
         avg_centroid = sum(centroids) / len(centroids)
         self.assertAlmostEqual(avg_centroid, 440, delta=50)
+
+
+    def test_timeseries_length_zero_no_arrays(self):
+        """Default (0) should omit loudness and spectralCentroid keys."""
+        audio = generate_sine(440, 10)
+        code, stdout, _ = run_analyzer(audio, timeseries_length=0)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertNotIn("loudness", data)
+        self.assertNotIn("spectralCentroid", data)
+
+    def test_timeseries_length_minus_one_raw_values(self):
+        """--timeseries-length -1 should output all raw values without resampling."""
+        audio = generate_sine(440, 30)
+        code_raw, stdout_raw, _ = run_analyzer(audio, timeseries_length=-1)
+        self.assertEqual(code_raw, 0)
+        raw = json.loads(stdout_raw)
+        code_res, stdout_res, _ = run_analyzer(audio, timeseries_length=50)
+        self.assertEqual(code_res, 0)
+        resampled = json.loads(stdout_res)
+        # Raw arrays should be longer than resampled ones
+        self.assertGreater(len(raw["loudness"]), len(resampled["loudness"]))
+        self.assertGreater(len(raw["spectralCentroid"]), len(resampled["spectralCentroid"]))
 
 
 if __name__ == "__main__":

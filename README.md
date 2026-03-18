@@ -30,6 +30,13 @@ By default the sample rate is assumed to be 44100 Hz. Use `--samplerate` for oth
 ./build/song-analyzer --samplerate 48000 < audio.raw
 ```
 
+Use `--timeseries-length N` to include time-series arrays in the output. By default (0), they are omitted. Use `-1` to output all raw values without resampling:
+
+```bash
+./build/song-analyzer --timeseries-length 1000 < audio.raw
+./build/song-analyzer --timeseries-length -1 < audio.raw
+```
+
 Output:
 ```json
 {
@@ -41,8 +48,8 @@ Output:
   "bpmConfidence": 2.04,
   "integratedLoudness": -14.2,
   "loudnessRange": 7.3,
-  "loudness": [-18.1, -17.5, -16.8, "... up to 1000 floats"],
-  "spectralCentroid": [1204.3, 1180.7, 1220.1, "... up to 1000 floats"]
+  "loudness": [-18.1, -17.5, -16.8, "..."],          // only with --timeseries-length
+  "spectralCentroid": [1204.3, 1180.7, 1220.1, "..."] // only with --timeseries-length
 }
 ```
 

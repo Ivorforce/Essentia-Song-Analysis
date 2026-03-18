@@ -12,6 +12,7 @@
 
 int main(int argc, char* argv[]) {
     essentia::Real sampleRate = 44100.0;
+    long timeseriesLength = 0;
 
     for (int i = 1; i < argc; i++) {
         if (std::strcmp(argv[i], "--version") == 0) {
@@ -31,6 +32,18 @@ int main(int argc, char* argv[]) {
                 std::cerr << "Invalid sample rate: " << argv[i] << std::endl;
                 return 1;
             }
+        } else if (std::strcmp(argv[i], "--timeseries-length") == 0) {
+            if (i + 1 >= argc) {
+                std::cerr << "Missing value for --timeseries-length" << std::endl;
+                return 1;
+            }
+            char* end;
+            long val = std::strtol(argv[++i], &end, 10);
+            if (*end != '\0' || val < -1) {
+                std::cerr << "Invalid timeseries length: " << argv[i] << std::endl;
+                return 1;
+            }
+            timeseriesLength = val;
         } else {
             std::cerr << "Unknown option: " << argv[i] << std::endl;
             return 1;
@@ -60,7 +73,7 @@ int main(int argc, char* argv[]) {
     }
 
     essentia::init();
-    std::cout << analyzeSong(audio, sampleRate) << std::endl;
+    std::cout << analyzeSong(audio, sampleRate, timeseriesLength) << std::endl;
     essentia::shutdown();
 
     return 0;
