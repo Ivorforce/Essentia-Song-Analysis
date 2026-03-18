@@ -13,6 +13,11 @@ on:
           - ubuntu-22.04
           - macos-14
           - windows-2022
+  workflow_call:
+    inputs:
+      os:
+        type: string
+        default: 'all'
 
 jobs:
   build:
