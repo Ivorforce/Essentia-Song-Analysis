@@ -67,9 +67,6 @@ jobs:
       - name: Build
         run: python3 waf build
 
-      - name: Test
-        run: python3 tests.py
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -78,3 +75,6 @@ jobs:
             build/song-analyzer*
             LICENSE
             THIRD-PARTY-LICENSES
+
+      - name: Test
+        run: python3 tests.py
