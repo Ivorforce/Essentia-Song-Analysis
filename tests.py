@@ -86,7 +86,7 @@ class TestSongAnalyzer(unittest.TestCase):
         """No audio data should exit with error."""
         code, stdout, stderr = run_analyzer(b"")
         self.assertNotEqual(code, 0)
-        self.assertIn("No audio data", stderr)
+        self.assertIn("Audio too short", stderr)
 
     def test_output_is_valid_json(self):
         """Output should be parseable JSON with all expected fields."""

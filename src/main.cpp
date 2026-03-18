@@ -54,8 +54,8 @@ int main(int argc, char* argv[]) {
     size_t remaining = std::cin.gcount() / sizeof(essentia::Real);
     audio.insert(audio.end(), buf, buf + remaining);
 
-    if (audio.empty()) {
-        std::cerr << "No audio data received on stdin" << std::endl;
+    if (audio.size() < static_cast<size_t>(sampleRate)) {
+        std::cerr << "Audio too short (less than 1 second)" << std::endl;
         return 1;
     }
 
