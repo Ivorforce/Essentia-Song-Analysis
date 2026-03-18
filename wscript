@@ -38,7 +38,9 @@ def configure(ctx):
         cache_file = os.path.join(ESSENTIA_DIR, 'build', 'c4che', '_cache.py')
         with open(cache_file) as f:
             cache = f.read()
-        cache = cache.replace("'-W2'", "'-Wall'").replace(", '-EHsc'", "")
+        cache = (cache
+                 .replace("'-W2'", "'-Wall', '-D_USE_MATH_DEFINES'")
+                 .replace(", '-EHsc'", ""))
         with open(cache_file, 'w') as f:
             f.write(cache)
 
