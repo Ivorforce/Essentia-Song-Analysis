@@ -56,6 +56,10 @@ jobs:
           mkdir -p "$EIGEN_DIR/lib/pkgconfig"
           printf 'Name: Eigen3\nDescription: C++ template library for linear algebra\nVersion: 3.4.0\nCflags: -I%s\n' "$EIGEN_DIR" > "$EIGEN_DIR/lib/pkgconfig/eigen3.pc"
           echo "PKG_CONFIG_PATH=$EIGEN_DIR/lib/pkgconfig" >> "$GITHUB_ENV"
+          # Strawberry Perl's pkg-config is broken on this runner — it finds
+          # eigen3 but doesn't return -I flags. Set CPATH so GCC finds Eigen
+          # headers regardless.
+          echo "CPATH=$EIGEN_DIR" >> "$GITHUB_ENV"
 
       - name: Configure
         run: python3 waf configure ${{ runner.os == 'Windows' && '--check-cxx-compiler=g++' || '' }}
