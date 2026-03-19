@@ -11,7 +11,7 @@
 #include "version.h"
 
 int main(int argc, char* argv[]) {
-    essentia::Real sampleRate = 44100.0;
+    essentia::Real sampleRate = 0;
     long timeseriesLength = 0;
 
     for (int i = 1; i < argc; i++) {
@@ -48,6 +48,11 @@ int main(int argc, char* argv[]) {
             std::cerr << "Unknown option: " << argv[i] << std::endl;
             return 1;
         }
+    }
+
+    if (sampleRate <= 0) {
+        std::cerr << "Missing required --samplerate option" << std::endl;
+        return 1;
     }
 
 #ifdef _WIN32

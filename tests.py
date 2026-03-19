@@ -43,9 +43,7 @@ def generate_click_track(bpm, duration_sec):
 
 def run_analyzer(audio_bytes, sample_rate=SAMPLE_RATE, timeseries_length=None):
     """Run song-analyzer with given stdin bytes, return (returncode, stdout, stderr)."""
-    cmd = [BINARY]
-    if sample_rate != 44100:
-        cmd += ["--samplerate", str(sample_rate)]
+    cmd = [BINARY, "--samplerate", str(sample_rate)]
     if timeseries_length is not None:
         cmd += ["--timeseries-length", str(timeseries_length)]
     result = subprocess.run(

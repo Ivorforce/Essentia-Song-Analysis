@@ -28,16 +28,16 @@ Essentia is configured automatically with `--build-static --lightweight= --fft=K
 
 ## Usage
 
-Pipe binary little-endian 32-bit floats (mono) into stdin:
+Pipe binary little-endian 32-bit floats (mono) into stdin. `--samplerate` is required:
 
 ```bash
-./build/song-analyzer < audio.raw
+./build/song-analyzer --samplerate 44100 < audio.raw
 ./build/song-analyzer --samplerate 48000 < audio.raw
-./build/song-analyzer --timeseries-length 1000 < audio.raw
-./build/song-analyzer --timeseries-length -1 < audio.raw   # no resampling, all raw values
+./build/song-analyzer --samplerate 44100 --timeseries-length 1000 < audio.raw
+./build/song-analyzer --samplerate 44100 --timeseries-length -1 < audio.raw   # no resampling, all raw values
 ```
 
-Default sample rate is 44100 Hz. Use `--samplerate` for other rates.
+44100 Hz is expected; other sample rates may reduce BPM accuracy.
 
 Use `--timeseries-length N` to include time-series arrays (loudness, spectralCentroid) in the output. Default is 0 (omitted). Use -1 to output all raw values without resampling.
 

@@ -1,10 +1,31 @@
 #include "analyze.h"
 #include <sstream>
 #include <numeric>
+#include <iostream>
 #include <essentia/algorithmfactory.h>
 
 using namespace essentia;
 using namespace essentia::standard;
+
+// Check if n has only small prime factors (2, 3, 5, 7) for FFT efficiency.
+// KISS FFT handles 2, 3, 4, 5 natively; 7 is slightly less efficient but
+// necessary for exact 48000→44100 conversion (44100 = 2² × 3² × 5² × 7²).
+static bool isSmooth(size_t n) {
+    for (size_t p : {2, 3, 5, 7}) {
+        while (n % p == 0) n /= p;
+    }
+    return n == 1;
+}
+
+static size_t prevSmooth(size_t n) {
+    while (n > 1 && !isSmooth(n)) n--;
+    return n;
+}
+
+static size_t nextSmooth(size_t n) {
+    while (!isSmooth(n)) n++;
+    return n;
+}
 
 static std::vector<Real> blockAverage(const std::vector<Real>& data, size_t targetSize) {
     if (data.size() <= targetSize) return data;
@@ -35,15 +56,19 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate, long ti
     keyExtractor->output("strength").set(keyStrength);
     keyExtractor->compute();
 
-    // BPM detection — RhythmExtractor2013 only supports 44100 Hz, resample if needed
+    // BPM detection — RhythmExtractor2013 only supports 44100 Hz, resample if needed.
+    // KISS FFT is O(n²) for sizes with large prime factors, so we round both input
+    // and output sizes to the nearest "smooth" number (only factors of 2, 3, 5, 7).
     const std::vector<Real>* bpmAudio = &audio;
     std::vector<Real> resampledAudio;
     if (sampleRate != 44100.0) {
-        size_t outSize = static_cast<size_t>(
-            static_cast<double>(audio.size()) * 44100.0 / sampleRate);
-        if (outSize % 2 != 0) outSize++;
-        size_t inSize = audio.size();
-        if (inSize % 2 != 0) inSize--;
+        std::cerr << "Warning: BPM accuracy may be reduced for non-44100 Hz audio. "
+            "For best results, provide audio at 44100 Hz." << std::endl;
+        size_t inSize = prevSmooth(audio.size());
+        if (inSize % 2 != 0) inSize = prevSmooth(inSize - 1);
+        size_t outSize = nextSmooth(static_cast<size_t>(
+            static_cast<double>(inSize) * 44100.0 / sampleRate));
+        if (outSize % 2 != 0) outSize = nextSmooth(outSize + 1);
         std::vector<Real> evenAudio(audio.begin(), audio.begin() + inSize);
         std::unique_ptr<Algorithm> resampler(factory.create("ResampleFFT",
             "inSize", static_cast<int>(inSize),
