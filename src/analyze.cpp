@@ -1,4 +1,5 @@
 #include "analyze.h"
+#include "version.h"
 #include <sstream>
 #include <numeric>
 #include <iostream>
@@ -151,7 +152,9 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate, long ti
     Real duration = static_cast<Real>(audio.size()) / sampleRate;
     std::ostringstream json;
     json << "{"
-         << "\"duration\": " << duration
+         << "\"version\": \"" << SONG_ANALYZER_VERSION << "\""
+         << ", \"essentiaVersion\": \"" << ESSENTIA_VERSION << "\""
+         << ", \"duration\": " << duration
          << ", \"key\": \"" << key << "\""
          << ", \"scale\": \"" << scale << "\""
          << ", \"keyStrength\": " << keyStrength
