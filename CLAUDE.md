@@ -41,7 +41,7 @@ Pipe binary little-endian 32-bit floats (mono) into stdin. `--samplerate` is req
 
 Use `--timeseries-length N` to include time-series arrays (loudness, spectralCentroid) in the output. Default is 0 (omitted). Use -1 to output all raw values without resampling.
 
-Outputs JSON to stdout with key, scale, BPM, integrated loudness, loudness range, and optionally time-series arrays (loudness, spectralCentroid).
+Outputs JSON to stdout with version, essentiaVersion, key, scale, BPM, integrated loudness, loudness range, and optionally time-series arrays (loudness, spectralCentroid).
 
 ## Testing
 

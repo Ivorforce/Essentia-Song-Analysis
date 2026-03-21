@@ -37,6 +37,8 @@ Use `--timeseries-length N` to include time-series arrays in the output. By defa
 Output:
 ```json
 {
+  "version": "1.4.0",
+  "essentiaVersion": "2.1-beta6-dev",
   "duration": 210.5,
   "key": "A",
   "scale": "minor",
