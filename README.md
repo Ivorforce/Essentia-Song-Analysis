@@ -47,6 +47,7 @@ Output:
   "bpmConfidence": 2.04,
   "integratedLoudness": -14.2,
   "loudnessRange": 7.3,
+  "trackPeak": 0.95,
   "loudness": [-18.1, -17.5, -16.8, "..."],          // only with --timeseries-length
   "spectralCentroid": [1204.3, 1180.7, 1220.1, "..."] // only with --timeseries-length
 }

@@ -94,7 +94,7 @@ class TestSongAnalyzer(unittest.TestCase):
         code, stdout, _ = run_analyzer(audio)
         self.assertEqual(code, 0)
         data = json.loads(stdout)
-        for field in ("duration", "key", "scale", "keyStrength", "bpm", "bpmConfidence"):
+        for field in ("duration", "key", "scale", "keyStrength", "bpm", "bpmConfidence", "trackPeak"):
             self.assertIn(field, data)
 
     def test_sine_440_detects_key_a(self):
@@ -185,6 +185,22 @@ class TestSongAnalyzer(unittest.TestCase):
         avg_centroid = sum(centroids) / len(centroids)
         self.assertAlmostEqual(avg_centroid, 440, delta=50)
 
+
+    def test_track_peak(self):
+        """Track peak should match the amplitude of the sine wave."""
+        audio = generate_sine(440, 10, amplitude=0.5)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertAlmostEqual(data["trackPeak"], 0.5, delta=0.01)
+
+    def test_track_peak_silence(self):
+        """Silence should have a track peak of 0."""
+        audio = generate_silence(5)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertEqual(data["trackPeak"], 0)
 
     def test_timeseries_length_zero_no_arrays(self):
         """Default (0) should omit loudness and spectralCentroid keys."""

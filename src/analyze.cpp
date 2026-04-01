@@ -148,6 +148,13 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate, long ti
     else if (timeseriesLength > 0)
         spectralCentroidPoints = blockAverage(centroidValues, static_cast<size_t>(timeseriesLength));
 
+    // Peak volume (max absolute sample value)
+    Real peak = 0;
+    for (size_t i = 0; i < audio.size(); i++) {
+        Real absVal = std::abs(audio[i]);
+        if (absVal > peak) peak = absVal;
+    }
+
     // Build JSON
     Real duration = static_cast<Real>(audio.size()) / sampleRate;
     std::ostringstream json;
@@ -161,7 +168,8 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate, long ti
          << ", \"bpm\": " << bpm
          << ", \"bpmConfidence\": " << bpmConfidence
          << ", \"integratedLoudness\": " << integratedLoudness
-         << ", \"loudnessRange\": " << loudnessRange;
+         << ", \"loudnessRange\": " << loudnessRange
+         << ", \"trackPeak\": " << peak;
     if (timeseriesLength != 0) {
         json << ", \"loudness\": [";
         for (size_t i = 0; i < loudnessPoints.size(); i++) {
