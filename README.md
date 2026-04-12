@@ -1,11 +1,12 @@
 # Essentia Song Analyzer
 
-CLI tool that analyzes musical key, tempo (BPM), loudness, and spectral centroid from raw audio. Reads binary floats from stdin, outputs JSON to stdout.
+CLI tool that analyzes musical key, tempo (BPM), loudness, spectral centroid, and computes a Chromaprint fingerprint from raw audio. Reads binary floats from stdin, outputs JSON to stdout.
 
 ## Prerequisites
 
 - Python 3 (for waf build system)
 - C++17 compiler
+- CMake (for building bundled chromaprint)
 - Eigen (`brew install eigen` / `apt install libeigen3-dev`)
 
 ## Build
@@ -48,6 +49,7 @@ Output:
   "integratedLoudness": -14.2,
   "loudnessRange": 7.3,
   "trackPeak": 0.95,
+  "chromaprint": "AQAAO0mUaEkSZSoA...",                // Chromaprint base64, AcoustID-compatible
   "loudness": [-18.1, -17.5, -16.8, "..."],          // only with --timeseries-length
   "spectralCentroid": [1204.3, 1180.7, 1220.1, "..."] // only with --timeseries-length
 }
@@ -72,3 +74,5 @@ This project is licensed under the [GNU Affero General Public License v3.0](LICE
 ## Acknowledgments
 
 Built with [Essentia](https://essentia.upf.edu/) — an open-source C++ library for audio analysis and music information retrieval by the [Music Technology Group](https://www.upf.edu/web/mtg/) at Universitat Pompeu Fabra.
+
+Audio fingerprinting via [Chromaprint](https://github.com/acoustid/chromaprint) — the open-source acoustic fingerprint library behind [AcoustID](https://acoustid.org/).

@@ -11,6 +11,7 @@ The analyzed properties are:
 - Loudness (EBU R128 integrated, loudness range + momentary time-series)
 - Track Peak (max absolute sample value, linear ratio where 1.0 = full scale)
 - Spectral Centroid (brightness time-series)
+- Chromaprint fingerprint (AcoustID-compatible base64, full track)
 
 ## Tech stack
 

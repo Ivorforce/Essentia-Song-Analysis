@@ -3,7 +3,9 @@
 #include <sstream>
 #include <numeric>
 #include <iostream>
+#include <cstdint>
 #include <essentia/algorithmfactory.h>
+#include <chromaprint.h>
 
 using namespace essentia;
 using namespace essentia::standard;
@@ -155,6 +157,36 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate, long ti
         if (absVal > peak) peak = absVal;
     }
 
+    // Chromaprint fingerprint (full track, AcoustID-compatible base64).
+    // Best-effort: failures log to stderr but do not abort the analysis.
+    std::string fingerprint;
+    {
+        std::vector<int16_t> pcm16(audio.size());
+        for (size_t i = 0; i < audio.size(); i++) {
+            Real s = audio[i] * 32768.0f;
+            if (s > 32767.0f) s = 32767.0f;
+            else if (s < -32768.0f) s = -32768.0f;
+            pcm16[i] = static_cast<int16_t>(s);
+        }
+        ChromaprintContext* cpctx = chromaprint_new(CHROMAPRINT_ALGORITHM_DEFAULT);
+        if (!cpctx) {
+            std::cerr << "Warning: chromaprint_new failed" << std::endl;
+        } else {
+            int ok = chromaprint_start(cpctx, static_cast<int>(sampleRate), 1);
+            if (ok) ok = chromaprint_feed(cpctx, pcm16.data(), static_cast<int>(pcm16.size()));
+            if (ok) ok = chromaprint_finish(cpctx);
+            char* fp = nullptr;
+            if (ok) ok = chromaprint_get_fingerprint(cpctx, &fp);
+            if (ok && fp) {
+                fingerprint = fp;
+            } else {
+                std::cerr << "Warning: chromaprint fingerprint generation failed" << std::endl;
+            }
+            if (fp) chromaprint_dealloc(fp);
+            chromaprint_free(cpctx);
+        }
+    }
+
     // Build JSON
     Real duration = static_cast<Real>(audio.size()) / sampleRate;
     std::ostringstream json;
@@ -169,7 +201,8 @@ std::string analyzeSong(const std::vector<Real>& audio, Real sampleRate, long ti
          << ", \"bpmConfidence\": " << bpmConfidence
          << ", \"integratedLoudness\": " << integratedLoudness
          << ", \"loudnessRange\": " << loudnessRange
-         << ", \"trackPeak\": " << peak;
+         << ", \"trackPeak\": " << peak
+         << ", \"chromaprint\": \"" << fingerprint << "\"";
     if (timeseriesLength != 0) {
         json << ", \"loudness\": [";
         for (size_t i = 0; i < loudnessPoints.size(); i++) {

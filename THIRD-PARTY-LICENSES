@@ -42,6 +42,73 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================================
+Chromaprint
+https://github.com/acoustid/chromaprint
+License: GNU Lesser General Public License v2.1 or later
+================================================================================
+
+Chromaprint is statically linked into this project. Per LGPL-2.1, the source
+code of the chromaprint version used is available as a git submodule under
+./chromaprint and can also be obtained from
+https://github.com/acoustid/chromaprint. The full LGPL-2.1 license text is
+available at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html and in
+the chromaprint source tree (chromaprint/LICENSE.md).
+
+================================================================================
+FFmpeg avresample (resample2.c)
+https://ffmpeg.org/
+License: GNU Lesser General Public License v2.1 or later
+================================================================================
+
+A single file from FFmpeg's audio resampling code (libavresample/resample2.c)
+is vendored inside chromaprint at chromaprint/src/avresample/resample2.c and
+statically linked into this project as part of chromaprint.
+
+Copyright (c) 2004 Michael Niedermayer <michaelni@gmx.at>
+
+The full LGPL-2.1 license text is available at
+https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html. The source of the
+vendored file is available in the chromaprint git submodule under
+chromaprint/src/avresample/.
+
+================================================================================
+Cephes Mathematical Library
+https://www.netlib.org/cephes/
+License: Permissive (Stephen L. Moshier)
+================================================================================
+
+Selected files from the Cephes mathematical library by Stephen L. Moshier are
+vendored inside Essentia at essentia/src/3rdparty/cephes/ and statically linked
+into this project (gamma, hyperg, iv, polevl).
+
+Cephes is widely distributed under permissive terms by its author and is also
+shipped under BSD-3-Clause by SciPy. See
+https://www.netlib.org/cephes/readme for the author's distribution notice.
+
+================================================================================
+NNLS (Non-Negative Least Squares)
+https://www.netlib.org/lawson-hanson/
+License: Public domain (Netlib)
+================================================================================
+
+NNLS by Charles L. Lawson and Richard J. Hanson (Jet Propulsion Laboratory,
+1973), originally published in "Solving Least Squares Problems" (Prentice-Hall,
+1974), is vendored inside Essentia at essentia/src/3rdparty/nnls/ and
+statically linked into this project via the NNLSChroma algorithm. The code is
+distributed by Netlib without restriction.
+
+================================================================================
+Spline (John Burkardt)
+https://people.math.sc.edu/Burkardt/cpp_src/spline/spline.html
+License: GNU Lesser General Public License
+================================================================================
+
+Spline interpolation routines by John Burkardt are vendored inside Essentia
+at essentia/src/3rdparty/spline/ and statically linked into this project. The
+upstream files declare "This code is distributed under the GNU LGPL license."
+The full LGPL license text is available at https://www.gnu.org/licenses/.
+
+================================================================================
 Eigen
 https://eigen.tuxfamily.org/
 License: Mozilla Public License 2.0 (MPL2)

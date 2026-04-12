@@ -12,6 +12,10 @@ ESSENTIA_DIR = 'essentia'
 ESSENTIA_LIB = os.path.join(ESSENTIA_DIR, 'build', 'src')
 ESSENTIA_INC = os.path.join(ESSENTIA_DIR, 'src')
 
+CHROMAPRINT_DIR = 'chromaprint'
+CHROMAPRINT_BUILD = os.path.join(CHROMAPRINT_DIR, 'build')
+CHROMAPRINT_INC = os.path.join(CHROMAPRINT_DIR, 'src')
+
 
 def options(ctx):
     ctx.load('compiler_cxx')
@@ -51,6 +55,29 @@ def configure(ctx):
     ctx.env.ESSENTIA_INC = os.path.abspath(ESSENTIA_INC)
     ctx.env.ESSENTIA_LIB = os.path.abspath(ESSENTIA_LIB)
 
+    # Configure chromaprint via its CMake, statically, with bundled KissFFT
+    print('-> Configuring chromaprint...')
+    chromaprint_build_abs = os.path.abspath(CHROMAPRINT_BUILD)
+    chromaprint_src_abs = os.path.abspath(CHROMAPRINT_DIR)
+    if not os.path.isdir(chromaprint_build_abs):
+        os.makedirs(chromaprint_build_abs)
+    cmake_args = ['cmake',
+                  '-DBUILD_SHARED_LIBS=OFF',
+                  '-DBUILD_TOOLS=OFF',
+                  '-DBUILD_TESTS=OFF',
+                  '-DFFT_LIB=kissfft',
+                  '-DCMAKE_POSITION_INDEPENDENT_CODE=ON',
+                  '-DCMAKE_BUILD_TYPE=Release',
+                  '-DCMAKE_POLICY_VERSION_MINIMUM=3.5',
+                  chromaprint_src_abs]
+    if sys.platform == 'win32':
+        cmake_args.insert(1, '-G')
+        cmake_args.insert(2, 'MinGW Makefiles')
+    subprocess.check_call(cmake_args, cwd=chromaprint_build_abs)
+
+    ctx.env.CHROMAPRINT_INC = os.path.abspath(CHROMAPRINT_INC)
+    ctx.env.CHROMAPRINT_LIB = os.path.join(chromaprint_build_abs, 'src')
+
 
 def build(ctx):
     # Build essentia first
@@ -58,6 +85,13 @@ def build(ctx):
     subprocess.check_call(
         [sys.executable, 'waf', 'build'],
         cwd=os.path.abspath(ESSENTIA_DIR),
+    )
+
+    # Build chromaprint static lib
+    print('-> Building chromaprint...')
+    subprocess.check_call(
+        ['cmake', '--build', '.', '--config', 'Release'],
+        cwd=os.path.abspath(CHROMAPRINT_BUILD),
     )
 
     # Generate version.h from VERSION file
@@ -73,9 +107,12 @@ def build(ctx):
     ctx.program(
         source=['src/main.cpp', 'src/analyze.cpp'],
         target='song-analyzer',
-        includes=['src', ctx.env.ESSENTIA_INC],
+        includes=['src', ctx.env.ESSENTIA_INC, ctx.env.CHROMAPRINT_INC],
         use='EIGEN3',
-        stlib=['essentia'],
-        stlibpath=[ctx.env.ESSENTIA_LIB],
+        stlib=['essentia', 'chromaprint'],
+        stlibpath=[ctx.env.ESSENTIA_LIB, ctx.env.CHROMAPRINT_LIB],
+        # CHROMAPRINT_NODLL: chromaprint.h marks symbols __declspec(dllimport)
+        # on Windows by default; we link statically so disable that.
+        defines=['CHROMAPRINT_NODLL'],
         cxxflags=['-std=c++14', '-O2'],
     )

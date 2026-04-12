@@ -225,5 +225,69 @@ class TestSongAnalyzer(unittest.TestCase):
         self.assertGreater(len(raw["spectralCentroid"]), len(resampled["spectralCentroid"]))
 
 
+    def test_fingerprint_field_present(self):
+        """Output should contain a non-empty fingerprint string."""
+        audio = generate_sine(440, 10)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertIn("chromaprint", data)
+        self.assertIsInstance(data["chromaprint"], str)
+        self.assertGreater(len(data["chromaprint"]), 0)
+
+    def test_fingerprint_is_base64(self):
+        """Fingerprint should use chromaprint's URL-safe base64 alphabet."""
+        audio = generate_sine(440, 10)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        fp = data["chromaprint"]
+        self.assertRegex(fp, r'^[A-Za-z0-9_\-=]+$')
+        self.assertGreaterEqual(len(fp), 20)
+
+    def test_fingerprint_deterministic(self):
+        """Same input must produce byte-identical fingerprint."""
+        audio = generate_sine(440, 10)
+        _, out1, _ = run_analyzer(audio)
+        _, out2, _ = run_analyzer(audio)
+        self.assertEqual(json.loads(out1)["chromaprint"], json.loads(out2)["chromaprint"])
+
+    def test_fingerprint_differs_between_inputs(self):
+        """Different audio must produce different fingerprints.
+        Note: chromaprint is chroma-based, so octave-related sines (e.g. 440 vs 880)
+        collapse to the same fingerprint. Use pitches a tritone apart instead."""
+        a440 = generate_sine(440, 10)  # A
+        a622 = generate_sine(622, 10)  # D#/Eb — tritone away
+        _, out_a, _ = run_analyzer(a440)
+        _, out_b, _ = run_analyzer(a622)
+        self.assertNotEqual(json.loads(out_a)["chromaprint"], json.loads(out_b)["chromaprint"])
+
+    def test_fingerprint_silence(self):
+        """Silence must not crash the fingerprinter."""
+        audio = generate_silence(5)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertIn("chromaprint", data)
+        self.assertIsInstance(data["chromaprint"], str)
+
+    def test_fingerprint_48000_sample_rate(self):
+        """Fingerprint should be produced for 48000 Hz input."""
+        audio = generate_sine(440, 10, sample_rate=48000)
+        code, stdout, _ = run_analyzer(audio, sample_rate=48000)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertGreater(len(data["chromaprint"]), 0)
+
+    def test_fingerprint_survives_short_audio(self):
+        """Short audio must not crash; fingerprint field is present as a string."""
+        audio = generate_sine(440, 2)
+        code, stdout, _ = run_analyzer(audio)
+        self.assertEqual(code, 0)
+        data = json.loads(stdout)
+        self.assertIn("chromaprint", data)
+        self.assertIsInstance(data["chromaprint"], str)
+
+
 if __name__ == "__main__":
     unittest.main()
